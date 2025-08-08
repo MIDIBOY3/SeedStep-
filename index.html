@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SeedStep — Dual Track</title>
+<title>SeedStep -Dual Track-</title>
 <style>
   :root{
     --bg:#0f1115; --card:#151823; --ink:#e8ecf1; --muted:#9aa3b2;
@@ -38,19 +38,12 @@
   .grid{ display:grid; grid-template-columns:repeat(16,1fr); gap:6px; margin:8px 0 }
   .step{
     aspect-ratio:1/1; border-radius:10px; border:2px solid var(--line);
-    background:
-      repeating-linear-gradient(45deg, var(--offbg1) 0 8px, var(--offbg2) 8px 16px);
+    background:repeating-linear-gradient(45deg, var(--offbg1) 0 8px, var(--offbg2) 8px 16px);
     color:#b7c6e4; display:flex; align-items:center; justify-content:center; font-weight:700;
     cursor:pointer; position:relative; user-select:none;
   }
-  .step.active{
-    background:var(--onbg);
-    border-color:var(--onborder);
-    color:#0b1020;
-  }
-  .step::before{
-    content:"○"; position:absolute; top:6px; left:6px; font-size:14px; opacity:.9;
-  }
+  .step.active{ background:var(--onbg); border-color:var(--onborder); color:#0b1020; }
+  .step::before{ content:"○"; position:absolute; top:6px; left:6px; font-size:14px; opacity:.9; }
   .step.active::before{ content:"●"; }
   .step.play{ box-shadow:0 0 0 2px #7dd3fc66 inset, 0 0 18px #7dd3fc22 }
   .step::after{ content:""; position:absolute; inset:0; pointer-events:none;
@@ -72,7 +65,7 @@
 <div class="app">
   <div class="badge">Audio: <b id="astate">unknown</b></div>
   <header>
-    <h1>Mini Sequencer — Dual Track</h1>
+    <h1>SeedStep -Dual Track-</h1>
     <div class="row">
       <button id="start" class="pill">Start</button>
       <button id="stop" class="pill">Stop</button>
@@ -211,14 +204,14 @@
       <div class="param" style="width:280px"><label>Feedback</label><input id="dlyfb" type="range" min="0" max="90" value="30"><div class="value"><span id="dlyfbv">30</span>%</div></div>
       <div class="param" style="width:280px"><label>Reverb Mix</label><input id="revmix" type="range" min="0" max="100" value="0"><div class="value"><span id="revmixv">0</span>%</div></div>
     </div>
-    <div class="tiny">FXはデフォルトOFF。ミックスを上げた時にノードを生成＆トラックに自動配線。</div>
+    <div class="tiny">FXはデフォルトOFF。ミックスを上げた時にノード生成＆トラックに自動配線。</div>
   </section>
 
   <div class="tiny mono" id="stat" style="margin-top:6px"></div>
 </div>
 
 <script>
-// ------------- Utilities -------------
+// ---------------- Utilities ----------------
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const KEYS=["C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
 const K2={C:0,"C#":1,D:2,Eb:3,E:4,F:5,"F#":6,G:7,Ab:8,A:9,Bb:10,B:11};
@@ -233,7 +226,7 @@ function w16(n){ return [(n>>>8)&255,n&255]; }
 let seed=Math.floor(Math.random()*0x7fffffff);
 function seeded(i,salt=0){ let x=(seed^((i+salt)*2654435761))>>>0; x+=0x6d2b79f5; x=Math.imul(x^(x>>>15),x|1); x^=x+Math.imul(x^(x>>>7),x|61); return ((x^(x>>>14))>>>0)/4294967296; }
 
-// ------------- Audio (safe + per-track levels) -------------
+// ---------------- Audio graph ----------------
 let ctx, master;
 const astate=document.getElementById('astate');
 function updateState(){ astate.textContent=ctx?ctx.state:'not ready'; }
@@ -288,7 +281,7 @@ function ensureTrackToFX(){
   if(B.synth && revSend){ try{ B.synth.filter.disconnect(revSend); }catch(e){} B.synth.filter.connect(revSend); }
 }
 
-// ------------- Track model -------------
+// ---------------- Track model ----------------
 function makeTrack(name){
   const T=16;
   return {
@@ -311,10 +304,10 @@ function makeTrack(name){
 const A=makeTrack('A'), B=makeTrack('B');
 A.wave='sawtooth'; B.wave='sawtooth';
 let P={ bpm:120, swing:0, gate:70, gchance:100, xfade:0 };
-let running=false, nextT=0, idx=0, timer=null; // single declaration
+let running=false, nextT=0, idx=0, timer=null;
 let skipA=0, skipB=0;
 
-// Crossfader update (constant power)
+// ---------------- Crossfader / volume ----------------
 function applyXfade(){
   const t = (P.xfade + 100) / 200; // 0..1
   const ga = Math.cos(t * Math.PI/2);
@@ -324,7 +317,7 @@ function applyXfade(){
 }
 function applyTrackVol(track){ if(!track.synth) return; applyXfade(); }
 
-// ------------- UI helpers -------------
+// ---------------- UI helpers ----------------
 function fillOptions(sel, arr, selected){ sel.innerHTML=""; arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; if(String(v)===String(selected)) o.selected=true; sel.appendChild(o); }); }
 function fillNum(sel, start, end, selected){ sel.innerHTML=""; for(let i=start;i<=end;i++){ const o=document.createElement('option'); o.value=i; o.textContent=i; if(i===selected) o.selected=true; sel.appendChild(o); } }
 function bindRange(id, key, obj, fmt){
@@ -333,7 +326,7 @@ function bindRange(id, key, obj, fmt){
   el.oninput=upd; upd();
 }
 
-// ------------- Build Track UI -------------
+// ---------------- Build Track UI ----------------
 function buildTrackUI(track, prefix){
   fillOptions(document.getElementById('key'+prefix), KEYS, track.key);
   fillOptions(document.getElementById('scale'+prefix), Object.keys(SCALES), track.scale);
@@ -347,11 +340,13 @@ function buildTrackUI(track, prefix){
   document.getElementById('oct'+prefix).onchange=(e)=> track.oct=Number(e.target.value);
   document.getElementById('range'+prefix).onchange=(e)=> track.range=Number(e.target.value);
   document.getElementById('len'+prefix).onchange=(e)=> track.len=Number(e.target.value);
-  document.getElementById('auto'+prefix).onchange=(e)=> track.auto=e.target.checked;
+  const autoEl=document.getElementById('auto'+prefix'); if(autoEl) autoEl.onchange=(e)=> track.auto=e.target.checked;
   document.getElementById('wave'+prefix).onchange=(e)=> track.wave=e.target.value;
+
   // T-Chance slider
   const tch=document.getElementById('tchance'+prefix), tcv=document.getElementById('tchance'+prefix+'v'); tch.value=track.tchance; tcv.textContent=track.tchance;
   tch.oninput=()=>{ track.tchance=Number(tch.value); tcv.textContent=track.tchance; refreshMask(track,prefix); };
+
   // Vol slider
   const vol=document.getElementById('vol'+prefix), volv=document.getElementById('vol'+prefix+'v'); vol.value=track.vol; volv.textContent=track.vol;
   vol.oninput=()=>{ track.vol=Number(vol.value); volv.textContent=track.vol; applyTrackVol(track); };
@@ -398,8 +393,9 @@ function refreshMask(track,prefix){
     track.will[i] = (seeded(i, prefix==='A'?0:1000) <= pfinal) ? 1 : 0;
     refreshCell(track,prefix,i);
   }
+}
+
 function updateEditor(track,prefix){
-  // sync Step Editor UI with current selection (track.sel)
   const i = track.sel;
   const set = (id, val, labelFmt=null)=>{
     const el = document.getElementById(id+prefix);
@@ -422,7 +418,6 @@ function updateEditor(track,prefix){
   highlightSel(track);
 }
 
-}
 function bindStepEditor(track,prefix){
   const sel = document.getElementById('sel'+prefix);
   const on  = document.getElementById('on'+prefix),  onv=document.getElementById('on'+prefix+'v');
@@ -459,7 +454,7 @@ function bindStepEditor(track,prefix){
   updAll();
 }
 
-// ------------- Synth voice & play -------------
+// ---------------- Synth voice & play ----------------
 function playNote(track, freq, when, dur, vel, doSlideToFreq=null){
   const o1=ctx.createOscillator(), o2=ctx.createOscillator(), g=ctx.createGain();
   o1.type=track.wave; o2.type=track.wave;
@@ -483,7 +478,7 @@ function playNote(track, freq, when, dur, vel, doSlideToFreq=null){
 
 function trackBaseMidi(t){ return 12*(t.oct+1) + K2[t.key]; }
 
-// ------------- Scheduler -------------
+// ---------------- Scheduler ----------------
 function stepDur(){ return (60/P.bpm)/4; }
 function swingOf(i){ const s=P.swing/100; return (i%2===1)? stepDur()*(s*0.5) : 0; }
 
@@ -550,7 +545,7 @@ function start(){
 }
 function stop(){ running=false; clearTimeout(timer); timer=null; if(A._cellsDiv) A._cellsDiv.forEach(d=>d.classList.remove('play')); if(B._cellsDiv) B._cellsDiv.forEach(d=>d.classList.remove('play')); }
 
-// ------------- Bind global UI -------------
+// ---------------- Bind global UI ----------------
 bindRange('bpm','bpm',P); bindRange('swing','swing',P); bindRange('gate','gate',P); bindRange('gchance','gchance',P);
 bindRange('xfade','xfade',P,(x)=>x);
 document.getElementById('start').onclick=async ()=>{ ensureAudio(); if(ctx.state==='suspended') await ctx.resume(); updateState(); start(); };
@@ -578,14 +573,14 @@ document.getElementById('oneB').onclick=()=> oneNoteTrack(B,'B');
 
 document.getElementById('reseed').onclick=()=>{ seed=Math.floor(Math.random()*0x7fffffff); refreshAllMasks(); };
 
-// ------------- Delay & Reverb controls -------------
+// ---------------- FX controls ----------------
 function bindFx(id, cb){ const el=document.getElementById(id), v=document.getElementById(id+'v'); const upd=()=>{ const val=Number(el.value); if(v) v.textContent=String(val); cb(val); }; el.oninput=upd; upd(); }
 bindFx('dlymix', (val)=>{ ensureAudio(); if(val>0) ensureDelay(); ensureTrackToFX(); if(dlyMix) dlyMix.gain.value=val/100; });
 bindFx('dlytime',(val)=>{ ensureAudio(); if(val>0) ensureDelay(); if(dlyNode) dlyNode.delayTime.value=val/1000; });
 bindFx('dlyfb',  (val)=>{ ensureAudio(); if(val>0) ensureDelay(); if(dlyFb) dlyFb.gain.value=Math.min(0.98,val/100); });
 bindFx('revmix', (val)=>{ ensureAudio(); if(val>0) ensureReverb(); ensureTrackToFX(); if(revMix) revMix.gain.value=val/100; });
 
-// ------------- Permalink & Share -------------
+// ---------------- Permalink & Share ----------------
 function getState(){ return { A, B, P, seed }; }
 function setState(obj){
   if(!obj) return;
@@ -606,10 +601,10 @@ function enc(){ return btoa(unescape(encodeURIComponent(JSON.stringify(getState(
 function dec(s){ return JSON.parse(decodeURIComponent(escape(atob(s)))); }
 function copyLink(){ const u=new URL(location.href); u.hash='s='+enc(); navigator.clipboard.writeText(u.toString()); alert('Permalink copied!'); }
 document.getElementById('copy').onclick=()=>copyLink();
-document.getElementById('share').onclick=()=>{ const u=new URL(location.href); u.hash='s='+enc(); const text=encodeURIComponent('Mini Sequencer — Dual Track'); const url=encodeURIComponent(u.toString()); window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`,'_blank'); }
+document.getElementById('share').onclick=()=>{ const u=new URL(location.href); u.hash='s='+enc(); const text=encodeURIComponent('SeedStep -Dual Track-'); const url=encodeURIComponent(u.toString()); window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`,'_blank'); }
 if(location.hash.startsWith('#s=')){ try{ setState(dec(location.hash.slice(3))); }catch(e){} }
 
-// ------------- MIDI Export (Type-1) -------------
+// ---------------- MIDI Export ----------------
 document.getElementById('midi').onclick=()=>{
   const PPQ=480; const tempo=Math.round(60000000/P.bpm); const st=Math.round(PPQ/4);
   function trackBytesFor(T){
@@ -641,10 +636,10 @@ document.getElementById('midi').onclick=()=>{
   const trB=[...bstr('MTrk'), ...w32(0)]; const bytesB=trackBytesFor(B); trB[8]=((bytesB.length>>>24)&255); trB[9]=((bytesB.length>>>16)&255); trB[10]=((bytesB.length>>>8)&255); trB[11]=(bytesB.length&255);
   const all=new Uint8Array([...hdr, ...meta, ...metaEvents, ...trA, ...bytesA, ...trB, ...bytesB]);
   const blob=new Blob([all],{type:'audio/midi'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mini_sequencer_dual.mid'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),15000);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='seedstep_dual.mid'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),15000);
 };
 
-// ------------- Boot -------------
+// ---------------- Boot ----------------
 buildTrackUI(A,'A'); buildTrackUI(B,'B');
 applyXfade();
 </script>
