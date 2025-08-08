@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SeedStep — Dual Track</title>
+<title>Mini Sequencer — Dual Track</title>
 <style>
   :root{
     --bg:#0f1115; --card:#151823; --ink:#e8ecf1; --muted:#9aa3b2;
@@ -398,6 +398,30 @@ function refreshMask(track,prefix){
     track.will[i] = (seeded(i, prefix==='A'?0:1000) <= pfinal) ? 1 : 0;
     refreshCell(track,prefix,i);
   }
+function updateEditor(track,prefix){
+  // sync Step Editor UI with current selection (track.sel)
+  const i = track.sel;
+  const set = (id, val, labelFmt=null)=>{
+    const el = document.getElementById(id+prefix);
+    const lv = document.getElementById(id+prefix+'v');
+    if(!el) return;
+    el.value = String(val);
+    if(lv){ lv.textContent = labelFmt ? labelFmt(val) : String(val); }
+  };
+  set('sel', i+1);
+  set('edt', i+1);
+  set('on', track.cells[i], (v)=> v? 'On':'Off');
+  set('vel', track.vel[i]);
+  set('sch', track.sch[i], (v)=> v+'%');
+  set('acc', track.acc[i], (v)=> v? 'On':'Off');
+  set('tie', track.tie[i], (v)=> v? 'On':'Off');
+  set('sli', track.sli[i], (v)=> v? 'On':'Off');
+  const accV = document.getElementById('accV'+prefix), accVv=document.getElementById('accV'+prefix+'v');
+  if(accV){ accV.value=String(track.accVel); if(accVv) accVv.textContent=String(track.accVel); }
+  refreshCell(track,prefix,i);
+  highlightSel(track);
+}
+
 }
 function bindStepEditor(track,prefix){
   const sel = document.getElementById('sel'+prefix);
