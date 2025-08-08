@@ -311,7 +311,8 @@ function makeTrack(name){
 const A=makeTrack('A'), B=makeTrack('B');
 A.wave='sawtooth'; B.wave='sawtooth';
 let P={ bpm:120, swing:0, gate:70, gchance:100, xfade:0 };
-let running=false, nextT=0, idx=0, timer=null;
+let running=false, nextT=0, idx=0, timer=null; // single declaration
+let skipA=0, skipB=0;
 
 // Crossfader update (constant power)
 function applyXfade(){
@@ -492,7 +493,6 @@ function scheduleTrackStep(track, prefix, i, t){
 
 function refreshAllMasks(){ refreshMask(A,'A'); refreshMask(B,'B'); }
 
-let skipA=0, skipB=0, nextT=0, idx=0, timer=null, running=false;
 function tick(){
   while(nextT < ctx.currentTime + 0.12){
     const tA = nextT + swingOf(idx);
@@ -547,6 +547,10 @@ document.getElementById('one').onclick=()=>{
   P.gchance=100; document.getElementById('gchance').value=100; document.getElementById('gchancev').textContent=100;
   refreshAllMasks(); buildTrackUI(A,'A'); buildTrackUI(B,'B'); applyXfade();
 };
+
+// Track One-Note buttons
+document.getElementById('oneA').onclick=()=> oneNoteTrack(A,'A');
+document.getElementById('oneB').onclick=()=> oneNoteTrack(B,'B');
 
 document.getElementById('reseed').onclick=()=>{ seed=Math.floor(Math.random()*0x7fffffff); refreshAllMasks(); };
 
